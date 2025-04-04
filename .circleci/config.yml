@@ -39,6 +39,14 @@ jobs:
               -Dsonar.host.url=https://sonarcloud.io \
               -Dsonar.login=$SONAR_TOKEN
 
+      - store_artifacts:
+          path: pytest-report.xml
+          destination: unit-test-report
+
+      - store_artifacts:
+          path: reports
+          destination: dependency-check-report
+
   docker_build:
     docker:
       - image: cimg/python:3.10
