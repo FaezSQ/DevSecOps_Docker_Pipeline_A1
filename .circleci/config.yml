@@ -6,14 +6,35 @@ jobs:
       - image: cimg/python:3.10
     steps:
       - checkout
+
       - run:
           name: Install Dependencies
           command: |
             pip install -r requirements.txt
+
       - run:
           name: Run Unit Tests
           command: |
             pytest tests/
+
+      - run:
+          name: Run OWASP Dependency Check
+          command: |
+            wget https://github.com/jeremylong/DependencyCheck/releases/download/v8.4.0/dependency-check-8.4.0-release.zip
+            unzip dependency-check-8.4.0-release.zip
+            ./dependency-check/bin/dependency-check.sh --scan . --format HTML --out reports
+
+      - run:
+          name: Run SonarCloud Analysis
+          command: |
+            curl -sSLo sonar-scanner.zip https://binaries.sonarsource.com/Distribution/sonar-scanner-cli/sonar-scanner-cli-5.0.1.3006-linux.zip
+            unzip sonar-scanner.zip
+            ./sonar-scanner-*/bin/sonar-scanner \
+              -Dsonar.projectKey=$SONAR_PROJECT_KEY \
+              -Dsonar.organization=$SONAR_ORG \
+              -Dsonar.sources=. \
+              -Dsonar.host.url=https://sonarcloud.io \
+              -Dsonar.login=$SONAR_TOKEN
 
   docker_build:
     docker:
@@ -27,8 +48,7 @@ jobs:
       - run:
           name: Login to Docker Hub
           command: |
-                echo "$DOCKER_PASSWORD" | docker login --username "$DOCKER_USERNAME" --password-stdin
-
+            echo "$DOCKER_PASSWORD" | docker login --username "$DOCKER_USERNAME" --password-stdin
       - run:
           name: Push Docker Image
           command: docker push faez181/invoicer:secure
