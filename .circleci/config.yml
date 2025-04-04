@@ -18,7 +18,12 @@ jobs:
       - run:
           name: Run Unit Tests
           command: |
-            pytest tests/
+              pip install pytest
+              pytest tests/ --junitxml=pytest-report.xml
+
+      - store_artifacts:
+          path: pytest-report.xml
+          destination: unit-test-report       
 
       - run:
           name: Run OWASP Dependency Check
@@ -38,10 +43,6 @@ jobs:
               -Dsonar.sources=. \
               -Dsonar.host.url=https://sonarcloud.io \
               -Dsonar.login=$SONAR_TOKEN
-
-      - store_artifacts:
-          path: pytest-report.xml
-          destination: unit-test-report
 
       - store_artifacts:
           path: reports
